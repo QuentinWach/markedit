@@ -36,3 +36,5 @@ pip install -r requirements.txt
 python main.py
 ```
 
+---
+Please leave a ⭐ if you found this useful!
