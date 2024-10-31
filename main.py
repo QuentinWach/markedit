@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QSplitter, 
                            QTextEdit, QWidget, QVBoxLayout, QHBoxLayout,
-                           QPushButton, QLabel, QFileDialog)
+                           QPushButton, QLabel, QFileDialog, QSizeGrip)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QColor
@@ -193,10 +193,40 @@ def hello_world():
         #toolBarLayout.addWidget(saveAsButton)
         toolBarLayout.addStretch()
 
-        # Modify main layout to include toolbar
-        mainLayout.addWidget(toolBar)  # Add toolbar below titleBar
-        mainLayout.addWidget(splitter)
-        
+        # Create a container for the main content and size grip
+        container = QWidget()
+        containerLayout = QVBoxLayout(container)
+        containerLayout.setContentsMargins(0, 0, 0, 0)
+        containerLayout.setSpacing(0)
+
+        # Add the splitter to the container
+        containerLayout.addWidget(splitter)
+
+        # Create a bottom bar for the size grip
+        bottomBar = QWidget()
+        bottomBar.setObjectName("bottomBar")
+        bottomBarLayout = QHBoxLayout(bottomBar)
+        bottomBarLayout.setContentsMargins(0, 0, 0, 0)
+
+        # Add stretch to push size grip to the right
+        bottomBarLayout.addStretch()
+
+        # Create and add the size grip
+        sizeGrip = QSizeGrip(bottomBar)
+        sizeGrip.setObjectName("sizeGrip")
+        bottomBarLayout.addWidget(sizeGrip)
+
+        # Add the bottom bar to the container
+        containerLayout.addWidget(bottomBar)
+
+        # Modify main layout to include the container
+        mainLayout = QVBoxLayout()
+        mainLayout.setContentsMargins(0, 0, 0, 0)
+        mainLayout.setSpacing(0)
+        mainLayout.addWidget(titleBar)
+        mainLayout.addWidget(toolBar)
+        mainLayout.addWidget(container)  # Add the container instead of splitter directly
+
         # Set the main layout
         centralWidget = QWidget()
         centralWidget.setObjectName("centralWidget")

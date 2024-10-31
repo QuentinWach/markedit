@@ -49,4 +49,31 @@ p {
 }
 ul, ol {
     color: #e0e0e0;
+}
+
+/* Matching scrollbar styles */
+::-webkit-scrollbar {
+    border: none;
+    background: #2b2b2b;
+    width: 10px;
+    margin: 0px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #3b4252;
+    min-height: 20px;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4c566a;
+}
+
+::-webkit-scrollbar-corner {
+    background: #2b2b2b;
+}
+
+/* Hide default scrollbar buttons */
+::-webkit-scrollbar-button {
+    display: none;
 } 

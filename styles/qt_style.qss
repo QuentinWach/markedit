@@ -101,4 +101,16 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 #toolBarButton:pressed {
     background-color: #5e81ac;
+}
+#bottomBar {
+    background-color: #2d2d2d;
+    max-height: 16px;
+    min-height: 16px;
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+#sizeGrip {
+    width: 16px;
+    height: 16px;
+    margin: 0px 5px 5px 0px;
 } 
