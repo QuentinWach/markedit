@@ -1,20 +1,19 @@
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
-    line-height: 1.6;
+    line-height: 1.3;
     padding: 20px;
     max-width: 900px;
     margin: 0 auto;
     color: #e0e0e0;
     background-color: #1e1e1e;
-    text-align: center;
+    text-align: left;
 }
 h1, h2, h3 {
-    color: white;
-    border-bottom: 2px solid white;
-    padding-bottom: 5px;
+    color: rgb(255, 255, 255);
+    border-bottom: 0px solid white;
+    padding-bottom: 0px;
 }
 code {
-    background-color: #2e3440;
     padding: 2px 5px;
     border-radius: 3px;
     font-family: 'Consolas', monospace;
@@ -22,12 +21,12 @@ code {
 }
 pre {
     background-color: #2e3440;
-    padding: 15px;
+    padding: 5px;
     border-radius: 5px;
     overflow-x: auto;
 }
 blockquote {
-    border-left: 4px solid #4c566a;
+    border-left: 4px solid #5c6985;
     margin: 0;
     padding-left: 16px;
     color: #a0a0a0;

@@ -13,7 +13,7 @@ QTextEdit {
     color: #e0e0e0;
     border: 1px solid #3b4252;
     border-radius: 4px;
-    padding: 8px;
+    padding: 0px;
     font-family: 'Consolas', monospace;
     font-size: 14px;
     selection-background-color: #3b4252;
@@ -112,5 +112,6 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 #sizeGrip {
     width: 16px;
     height: 16px;
-    margin: 0px 5px 5px 0px;
-} 
+    margin: 0px 1px 1px 0px;
+    opacity: 0.2;
+}

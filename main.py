@@ -2,8 +2,8 @@ from PyQt5.QtWidgets import (QApplication, QMainWindow, QSplitter,
                            QTextEdit, QWidget, QVBoxLayout, QHBoxLayout,
                            QPushButton, QLabel, QFileDialog, QSizeGrip)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import Qt, QCoreApplication
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt #, QCoreApplication
+from PyQt5.QtGui import QIcon
 import sys
 import markdown
 import os
@@ -15,6 +15,12 @@ class MarkdownEditor(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.dragPos = None
         self.maximizeButton = None
+        
+        # Set the window icon
+        icon_path = os.path.join('assets', 'icon.ico')
+        if os.path.exists(icon_path):
+            self.setWindowIcon(QIcon(icon_path))
+        
         self.load_styles()
         self.initUI()
         self.current_file = None  # Track current file
@@ -135,7 +141,7 @@ def hello_world():
         titleBarLayout.setSpacing(4)
         
         # Add title label with smaller font
-        titleLabel = QLabel("Markdown Editor", titleBar)
+        titleLabel = QLabel("Markedit", titleBar)
         titleLabel.setStyleSheet("color: #e0e0e0; font-size: 11px; padding-left: 3px;")
         
         # Add window control buttons with smaller size
@@ -299,8 +305,15 @@ def hello_world():
             with open(file_path, 'w', encoding='utf-8') as file:
                 file.write(self.editor.toPlainText())
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
+def main():
+    # Ensure only one QApplication instance is created
+    app = QApplication.instance()
+    if app is None:
+        app = QApplication(sys.argv)
+    
     editor = MarkdownEditor()
     editor.show()
     sys.exit(app.exec_())
+
+if __name__ == '__main__':
+    main()
