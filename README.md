@@ -29,3 +29,6 @@
    ```bash
    python new.py
    ```
+
+tkhtmlview is a simpler widget that doesn't support JavaScript, it won't be able to handle MathJax!
+So we sadly have to use PyQt for our app.
