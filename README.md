@@ -35,6 +35,8 @@ pip install -r requirements.txt
 ```bash
 python main.py
 ```
-
 ---
+## License
+This project is licensed under the Open Source Attribution License - see the [LICENSE](LICENSE) file for details.
+
 Please leave a ⭐ if you found this useful!
