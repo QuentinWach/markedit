@@ -1,196 +1,207 @@
-import customtkinter
-import markdown2
-from tkinter import font, Label
-from tkhtmlview import HTMLLabel
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QSplitter, 
+                           QTextEdit, QWidget, QVBoxLayout, QHBoxLayout,
+                           QPushButton, QLabel)
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+from PyQt5.QtCore import Qt, QCoreApplication
+from PyQt5.QtGui import QColor
+import sys
+import markdown
+import os
 
-def format_text_with_html(text):
-    # Convert markdown to HTML first
-    html = markdown2.markdown(text, extras=['fenced-code-blocks', 'tables'])
-    
-    # Wrap the HTML with MathJax support
-    full_html = f"""
-    <html>
-    <head>
-        <script>
-            MathJax = {{
-                tex: {{
-                    inlineMath: [['$', '$']],
-                    displayMath: [['$$', '$$']]
-                }},
-                svg: {{
-                    fontCache: 'global',
-                    scale: 1,
-                    color: 'white'
-                }}
-            }};
-        </script>
-        <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
-        <style>
-            :root {{
-                color-scheme: dark;
-            }}
-            body {{
-                font-family: Helvetica;
-                font-size: 14px;
-                margin: 10px;
-                padding: 0;
-                background-color: {app._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkTextbox"]["fg_color"])};
-                color: white;
-            }}
-            * {{
-                color: white !important;
-            }}
-            p {{
-                margin: 0;
-                padding: 0;
-                color: white !important;
-            }}
-            .mjx-svg-display {{
-                filter: invert(1) !important;
-            }}
-            .mjx-math svg {{
-                filter: invert(1) !important;
-            }}
-            strong {{
-                font-weight: bold;
-                color: white !important;
-            }}
-            em {{
-                font-style: italic;
-                color: white !important;
-            }}
-            li {{
-                color: white !important;
-            }}
-            ul {{
-                margin-top: 5px;
-                margin-bottom: 5px;
-            }}
-            h1, h2, h3, h4, h5, h6 {{
-                color: white !important;
-                margin: 10px 0;
-            }}
-            code {{
-                background-color: #2d2d2d;
-                padding: 2px 4px;
-                border-radius: 3px;
-                color: #e6e6e6 !important;
-            }}
-            pre {{
-                background-color: #2d2d2d;
-                padding: 10px;
-                border-radius: 5px;
-                overflow-x: auto;
-            }}
-            table {{
-                border-collapse: collapse;
-                margin: 10px 0;
-            }}
-            th, td {{
-                border: 1px solid white;
-                padding: 5px;
-                color: white !important;
-            }}
-        </style>
-    </head>
-    <body>
-        {html}
-    </body>
-    </html>
-    """
-    return full_html
+class MarkdownEditor(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.load_styles()
+        self.initUI()
 
-def create_preview_label(parent, html_content):
-    preview = HTMLLabel(
-        parent,
-        html=html_content,
-        width=450,
-        height=280,
-        padx=10,
-        pady=10,
-        background=app._apply_appearance_mode(customtkinter.ThemeManager.theme["CTkTextbox"]["fg_color"]),
-        fg="white"
-    )
-    preview.configure(
-        borderwidth=0,
-        highlightthickness=0
-    )
-    return preview
+    def load_styles(self):
+        # Load Qt stylesheet
+        qt_style_path = os.path.join('styles', 'qt_style.qss')
+        with open(qt_style_path, 'r') as f:
+            self.qt_style = f.read()
 
-def button_callback():
-    print("Adding card to deck...")
-    print(f"Front text: {front_entry.get('1.0', 'end-1c')}")
-    print(f"Back text: {back_entry.get('1.0', 'end-1c')}")
+        # Load HTML stylesheet
+        html_style_path = os.path.join('styles', 'html_style.css')
+        with open(html_style_path, 'r') as f:
+            self.html_style = f.read()
 
-def toggle_preview():
-    global preview_mode, front_preview_label, back_preview_label
-    preview_mode = not preview_mode
-    
-    if preview_mode:
-        # Switch to preview mode
-        preview_button.configure(text="Edit")
-        front_entry.pack_forget()
-        back_entry.pack_forget()
+    def initUI(self):
+        self.setWindowTitle('Markdown Editor with Preview')
         
-        # Create new preview labels with rendered content
-        front_html = format_text_with_html(front_entry.get("1.0", "end-1c"))
-        back_html = format_text_with_html(back_entry.get("1.0", "end-1c"))
+        # Apply Qt stylesheet
+        self.setStyleSheet(self.qt_style)
         
-        front_preview_label = create_preview_label(app, front_html)
-        back_preview_label = create_preview_label(app, back_html)
+        # Create main widget and layout
+        main_widget = QWidget()
+        self.setCentralWidget(main_widget)
+        layout = QVBoxLayout(main_widget)
         
-        front_preview_label.pack(padx=20, pady=(0, 20), fill="both", expand=True)
-        back_preview_label.pack(padx=20, pady=(0, 20), fill="both", expand=True)
+        # Create splitter for side-by-side layout
+        splitter = QSplitter(Qt.Horizontal)
         
-    else:
-        # Switch back to edit mode
-        preview_button.configure(text="Preview")
+        # Create text editor
+        self.editor = QTextEdit()
+        self.editor.setPlaceholderText("Enter Markdown text here...")
+        self.editor.textChanged.connect(self.update_preview)
         
-        # Remove preview labels
-        if 'front_preview_label' in globals():
-            front_preview_label.destroy()
-        if 'back_preview_label' in globals():
-            back_preview_label.destroy()
+        # Create web view for preview
+        self.preview = QWebEngineView()
         
-        # Show text entry boxes
-        front_entry.pack(padx=20, pady=(0, 20), fill="both", expand=True)
-        back_entry.pack(padx=20, pady=(0, 20), fill="both", expand=True)
+        # Add widgets to splitter
+        splitter.addWidget(self.editor)
+        splitter.addWidget(self.preview)
+        
+        # Set initial sizes for splitter
+        splitter.setSizes([400, 400])
+        
+        # Add splitter to layout
+        layout.addWidget(splitter)
+        
+        # Set initial HTML content with MathJax configuration
+        self.base_html = '''
+        <html>
+        <head>
+            <script type="text/javascript" async
+                src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+            </script>
+            <script type="text/x-mathjax-config">
+                MathJax.Hub.Config({{
+                    tex2jax: {{
+                        inlineMath: [['$','$'], ['\\(','\\)']],
+                        displayMath: [['$$','$$'], ['\\[','\\]']],
+                        processEscapes: true
+                    }}
+                }});
+            </script>
+            <style>
+{style}
+            </style>
+        </head>
+        <body>
+            {content}
+        </body>
+        </html>
+        '''
+        
+        # Set initial size of the window
+        self.resize(1200, 800)
+        
+        # Set some initial markdown content
+        initial_markdown = """# Welcome to Markdown Editor
 
-app = customtkinter.CTk()
-app.geometry("500x800")
+## Math Equations Example
 
-# Create a custom font for the textboxes
-text_font = customtkinter.CTkFont(family="Helvetica", size=14)
+The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$
 
-preview_mode = False
+### Display Math
+Maxwell's Equations:
 
-front_label = customtkinter.CTkLabel(app, text="Front of card")
-front_label.pack(padx=20, pady=(20, 0))
+$$
+\\begin{aligned}
+\\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\epsilon_0} \\\\\\
+\\nabla \\cdot \\mathbf{B} &= 0 \\\\\\
+\\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\\\
+\\nabla \\times \\mathbf{B} &= \\mu_0\\mathbf{J} + \\mu_0\\epsilon_0\\frac{\\partial \\mathbf{E}}{\\partial t}
+\\end{aligned}
+$$
 
-# Text entry for front
-front_entry = customtkinter.CTkTextbox(app, width=450, height=280)
-front_entry.pack(padx=20, pady=(0, 20), fill="both", expand=True)
-front_entry.configure(font=text_font)
-front_entry.insert("1.0", "Enter markdown and LaTeX here...\nExample: **bold** and _italic_\nMath: $x^2$ or $$\\sum_{i=1}^n i$$")
+## Regular Markdown
 
-back_label = customtkinter.CTkLabel(app, text="Back of card")
-back_label.pack(padx=20, pady=(20, 0))
+You can write:
+- Lists
+- *Italic text*
+- **Bold text**
+- [Links](https://example.com)
 
-# Text entry for back
-back_entry = customtkinter.CTkTextbox(app, width=450, height=280)
-back_entry.pack(padx=20, pady=(0, 20), fill="both", expand=True)
-back_entry.configure(font=text_font)
-back_entry.insert("1.0", "More examples:\n**Bold text** and _italic text_\nMath: $\\alpha = \\beta$ or $$E = mc^2$$\n\n- List item 1\n- List item 2")
+> This is a blockquote
 
-# Create a frame for buttons
-button_frame = customtkinter.CTkFrame(app)
-button_frame.pack(padx=20, pady=20)
+\`\`\`python
+def hello_world():
+    print("Hello, World!")
+\`\`\`
+"""
+        self.editor.setText(initial_markdown)
 
-# Add both buttons side by side
-button = customtkinter.CTkButton(button_frame, text="Add card", command=button_callback)
-button.pack(side="left", padx=10)
+        # Add these methods to handle window dragging
+        def mousePressEvent(self, event):
+            if event.button() == Qt.LeftButton:
+                self.dragPos = event.globalPos()
 
-preview_button = customtkinter.CTkButton(button_frame, text="Preview", command=toggle_preview)
-preview_button.pack(side="left", padx=10)
+        def mouseMoveEvent(self, event):
+            if event.buttons() == Qt.LeftButton:
+                self.move(self.pos() + event.globalPos() - self.dragPos)
+                self.dragPos = event.globalPos()
 
-app.mainloop()
+        # Add the event handlers to the class
+        self.mousePressEvent = mousePressEvent
+        self.mouseMoveEvent = mouseMoveEvent
+
+        # Create a custom title bar
+        titleBar = QWidget(self)
+        titleBar.setObjectName("titleBar")
+        titleBarLayout = QHBoxLayout(titleBar)
+        titleBarLayout.setContentsMargins(10, 0, 10, 0)
+        
+        # Add title label
+        titleLabel = QLabel("Markdown Editor with Preview", titleBar)
+        titleLabel.setStyleSheet("color: #e0e0e0;")
+        
+        # Add window control buttons
+        minimizeButton = QPushButton("−", titleBar)
+        minimizeButton.setObjectName("minimizeButton")
+        minimizeButton.clicked.connect(self.showMinimized)
+        
+        maximizeButton = QPushButton("□", titleBar)
+        maximizeButton.setObjectName("maximizeButton")
+        maximizeButton.clicked.connect(self.toggleMaximized)
+        
+        closeButton = QPushButton("×", titleBar)
+        closeButton.setObjectName("closeButton")
+        closeButton.clicked.connect(self.close)
+        
+        titleBarLayout.addWidget(titleLabel)
+        titleBarLayout.addStretch()
+        titleBarLayout.addWidget(minimizeButton)
+        titleBarLayout.addWidget(maximizeButton)
+        titleBarLayout.addWidget(closeButton)
+        
+        # Add the title bar to the main layout
+        mainLayout = QVBoxLayout()
+        mainLayout.setContentsMargins(0, 0, 0, 0)
+        mainLayout.setSpacing(0)
+        mainLayout.addWidget(titleBar)
+        mainLayout.addWidget(splitter)
+        
+        # Set the main layout
+        centralWidget = QWidget()
+        centralWidget.setObjectName("centralWidget")
+        centralWidget.setLayout(mainLayout)
+        self.setCentralWidget(centralWidget)
+
+    def toggleMaximized(self):
+        if self.isMaximized():
+            self.showNormal()
+        else:
+            self.showMaximized()
+
+    def update_preview(self):
+        # Convert markdown to HTML
+        markdown_text = self.editor.toPlainText()
+        html_content = markdown.markdown(markdown_text, extensions=['fenced_code', 'codehilite'])
+        
+        # Insert both the style and HTML content into the base template
+        full_html = self.base_html.format(
+            style=self.html_style,
+            content=html_content
+        )
+        
+        # Update the preview
+        self.preview.setHtml(full_html)
+
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    editor = MarkdownEditor()
+    editor.show()
+    sys.exit(app.exec_())
