@@ -1,4 +1,4 @@
-# Live Markdown Editor with LaTeX Support
+# Markedit
 
 A modern, minimalist Markdown editor with real-time preview and LaTeX math support. Designed for a seamless writing experience.
 
