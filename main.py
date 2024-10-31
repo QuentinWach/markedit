@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QSplitter, 
                            QTextEdit, QWidget, QVBoxLayout, QHBoxLayout,
-                           QPushButton, QLabel)
+                           QPushButton, QLabel, QFileDialog)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import Qt, QCoreApplication
 from PyQt5.QtGui import QColor
@@ -13,8 +13,11 @@ class MarkdownEditor(QMainWindow):
         super().__init__()
         self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.dragPos = None
+        self.maximizeButton = None
         self.load_styles()
         self.initUI()
+        self.current_file = None  # Track current file
 
     def load_styles(self):
         # Load Qt stylesheet
@@ -89,7 +92,7 @@ class MarkdownEditor(QMainWindow):
         self.resize(1200, 800)
         
         # Set some initial markdown content
-        initial_markdown = """# Welcome to Markdown Editor
+        initial_markdown = r"""# Welcome to Markdown Editor
 
 ## Math Equations Example
 
@@ -124,47 +127,38 @@ def hello_world():
 """
         self.editor.setText(initial_markdown)
 
-        # Add these methods to handle window dragging
-        def mousePressEvent(self, event):
-            if event.button() == Qt.LeftButton:
-                self.dragPos = event.globalPos()
-
-        def mouseMoveEvent(self, event):
-            if event.buttons() == Qt.LeftButton:
-                self.move(self.pos() + event.globalPos() - self.dragPos)
-                self.dragPos = event.globalPos()
-
-        # Add the event handlers to the class
-        self.mousePressEvent = mousePressEvent
-        self.mouseMoveEvent = mouseMoveEvent
-
         # Create a custom title bar
         titleBar = QWidget(self)
         titleBar.setObjectName("titleBar")
         titleBarLayout = QHBoxLayout(titleBar)
-        titleBarLayout.setContentsMargins(10, 0, 10, 0)
+        titleBarLayout.setContentsMargins(5, 2, 5, 2)
+        titleBarLayout.setSpacing(4)
         
-        # Add title label
-        titleLabel = QLabel("Markdown Editor with Preview", titleBar)
-        titleLabel.setStyleSheet("color: #e0e0e0;")
+        # Add title label with smaller font
+        titleLabel = QLabel("Markdown Editor", titleBar)
+        titleLabel.setStyleSheet("color: #e0e0e0; font-size: 11px; padding-left: 3px;")
         
-        # Add window control buttons
+        # Add window control buttons with smaller size
         minimizeButton = QPushButton("−", titleBar)
         minimizeButton.setObjectName("minimizeButton")
+        minimizeButton.setFixedSize(16, 16)
         minimizeButton.clicked.connect(self.showMinimized)
         
-        maximizeButton = QPushButton("□", titleBar)
-        maximizeButton.setObjectName("maximizeButton")
-        maximizeButton.clicked.connect(self.toggleMaximized)
+        # Initialize maximizeButton properly
+        self.maximizeButton = QPushButton("□", titleBar)
+        self.maximizeButton.setObjectName("maximizeButton")
+        self.maximizeButton.setFixedSize(16, 16)
+        self.maximizeButton.clicked.connect(self.toggleMaximized)
         
         closeButton = QPushButton("×", titleBar)
         closeButton.setObjectName("closeButton")
+        closeButton.setFixedSize(16, 16)
         closeButton.clicked.connect(self.close)
         
         titleBarLayout.addWidget(titleLabel)
         titleBarLayout.addStretch()
         titleBarLayout.addWidget(minimizeButton)
-        titleBarLayout.addWidget(maximizeButton)
+        titleBarLayout.addWidget(self.maximizeButton)
         titleBarLayout.addWidget(closeButton)
         
         # Add the title bar to the main layout
@@ -172,6 +166,35 @@ def hello_world():
         mainLayout.setContentsMargins(0, 0, 0, 0)
         mainLayout.setSpacing(0)
         mainLayout.addWidget(titleBar)
+        
+        # Create toolbar
+        toolBar = QWidget()
+        toolBar.setObjectName("toolBar")
+        toolBarLayout = QHBoxLayout(toolBar)
+        toolBarLayout.setContentsMargins(5, 2, 5, 2)
+        toolBarLayout.setSpacing(4)
+
+        # Create toolbar buttons
+        openButton = QPushButton("Open", toolBar)
+        openButton.setObjectName("toolBarButton")
+        openButton.clicked.connect(self.open_file)
+
+        saveButton = QPushButton("Save", toolBar)
+        saveButton.setObjectName("toolBarButton")
+        saveButton.clicked.connect(self.save_file)
+
+        #saveAsButton = QPushButton("Save As", toolBar)
+        #saveAsButton.setObjectName("toolBarButton")
+        #saveAsButton.clicked.connect(self.save_file_as)
+
+        # Add buttons to toolbar
+        toolBarLayout.addWidget(openButton)
+        toolBarLayout.addWidget(saveButton)
+        #toolBarLayout.addWidget(saveAsButton)
+        toolBarLayout.addStretch()
+
+        # Modify main layout to include toolbar
+        mainLayout.addWidget(toolBar)  # Add toolbar below titleBar
         mainLayout.addWidget(splitter)
         
         # Set the main layout
@@ -183,8 +206,10 @@ def hello_world():
     def toggleMaximized(self):
         if self.isMaximized():
             self.showNormal()
+            self.maximizeButton.setText("□")
         else:
             self.showMaximized()
+            self.maximizeButton.setText("❐")
 
     def update_preview(self):
         # Convert markdown to HTML
@@ -199,6 +224,50 @@ def hello_world():
         
         # Update the preview
         self.preview.setHtml(full_html)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragPos = event.globalPos()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton and self.dragPos is not None:
+            self.move(self.pos() + event.globalPos() - self.dragPos)
+            self.dragPos = event.globalPos()
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.dragPos = None
+
+    def open_file(self):
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Open Markdown File",
+            "deck",  # Default to deck directory
+            "Markdown Files (*.md);;All Files (*.*)"
+        )
+        if file_path:
+            self.current_file = file_path
+            with open(file_path, 'r', encoding='utf-8') as file:
+                self.editor.setText(file.read())
+
+    def save_file(self):
+        if self.current_file:
+            with open(self.current_file, 'w', encoding='utf-8') as file:
+                file.write(self.editor.toPlainText())
+        else:
+            self.save_file_as()
+
+    def save_file_as(self):
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save Markdown File",
+            "deck",  # Default to deck directory
+            "Markdown Files (*.md);;All Files (*.*)"
+        )
+        if file_path:
+            self.current_file = file_path
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(self.editor.toPlainText())
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

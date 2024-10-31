@@ -17,6 +17,7 @@ QTextEdit {
     font-family: 'Consolas', monospace;
     font-size: 14px;
     selection-background-color: #3b4252;
+    margin: 2px;
 }
 QTextEdit:focus {
     border: 1px solid #88c0d0;
@@ -54,7 +55,9 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
     background: none;
 }
 #titleBar {
-    background-color: #2b2b2b;
+    background-color: #2d2d2d;
+    max-height: 24px;
+    min-height: 24px;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
 }
@@ -73,4 +76,29 @@ QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
 }
 #closeButton:hover {
     background-color: #bf616a !important;
+}
+#minimizeButton, #maximizeButton, #closeButton {
+    font-size: 10px;
+    padding: 0px;
+    border: none;
+    border-radius: 2px;
+}
+#toolBar {
+    background-color: #2d2d2d;
+    min-height: 32px;
+    max-height: 32px;
+}
+#toolBarButton {
+    background-color: #3b4252;
+    color: #e0e0e0;
+    border: none;
+    border-radius: 3px;
+    padding: 4px 12px;
+    margin: 2px;
+}
+#toolBarButton:hover {
+    background-color: #4c566a;
+}
+#toolBarButton:pressed {
+    background-color: #5e81ac;
 } 

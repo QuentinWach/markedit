@@ -1,34 +1,38 @@
-# Markdown Editor with Local KaTeX Support
+# Live Markdown Editor with LaTeX Support
 
-## Setup Instructions
+A modern, minimalist Markdown editor with real-time preview and LaTeX math support. Designed for a seamless writing experience.
 
-1. Download KaTeX:
-   - Go to https://github.com/KaTeX/KaTeX/releases/
-   - Download the latest release zip file (e.g., katex.tar.gz)
+![Screenshot of the editor](docs/header.png)
 
-2. Set up the static files:
-   - Create a `static` folder in the project directory
-   - Extract the KaTeX files into `static/katex/`
-   - Ensure you have the following structure:
-     ```
-     static/
-     └── katex/
-         ├── katex.min.js
-         ├── katex.min.css
-         ├── contrib/
-         │   └── auto-render.min.js
-         └── fonts/
-     ```
+## Features
+- 🎨 Clean, modern dark theme interface
+- ⚡ Real-time preview as you type
+- ✍️ Full Markdown support
+- 📐 LaTeX math rendering (inline and display mode)
+- 🖱️ Drag-and-drop window movement
+- 💾 File operations (open/save)
+- 🎯 Custom titlebar and controls
+- 📏 Resizable split view
 
-3. Install Python dependencies:
-   ```bash
-   pip install customtkinter markdown2 tkinterweb
-   ```
+## Math Support
+- Inline math using `$...$` or `\(...\)`
+- Display math using `$$...$$` or `\[...\]`
+- Powered by MathJax
 
-4. Run the application:
-   ```bash
-   python new.py
-   ```
+## Installation
+1. Clone the repository:
 
-tkhtmlview is a simpler widget that doesn't support JavaScript, it won't be able to handle MathJax!
-So we sadly have to use PyQt for our app.
+```bash
+git clone https://github.com/QuentinWach/markdown-editor.git
+```
+
+2. Install the dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Run the application:
+```bash
+python main.py
+```
+
