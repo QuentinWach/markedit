@@ -1,6 +1,6 @@
 # Markedit
 
-A modern, minimalist Markdown editor with real-time preview and LaTeX math support. Designed for a seamless writing experience.
+**A modern, minimalist Markdown editor with real-time preview and LaTeX math support.** The extremely minimal code-base allows for fast, easy customization and creating more complex apps on top of it (e.g. note-taking, blogging, etc.).
 
 ![Screenshot of the editor](docs/header.png)
 
