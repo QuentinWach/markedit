@@ -15,7 +15,6 @@ $$
 $$
 
 ## Regular Markdown
-
 You can write:
 
 - Lists

@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QSplitter, 
                            QTextEdit, QWidget, QVBoxLayout, QHBoxLayout,
-                           QPushButton, QLabel, QFileDialog, QSizeGrip)
+                           QPushButton, QLabel, QFileDialog, QSizeGrip, QGraphicsDropShadowEffect)
 from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import Qt #, QCoreApplication
-from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtGui import QIcon, QColor
 import sys
 import markdown
 import os
@@ -16,6 +16,19 @@ class MarkdownEditor(QMainWindow):
         self.dragPos = None
         self.maximizeButton = None
         
+        # Add shadow effect
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(20)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.shadow.setColor(QColor(0, 0, 0, 100))
+        
+        # Create central widget to hold everything
+        self.central_widget = QWidget()
+        self.central_widget.setObjectName("centralWidget")
+        self.central_widget.setGraphicsEffect(self.shadow)
+        self.setCentralWidget(self.central_widget)
+        
         # Set the window icon
         icon_path = os.path.join('assets', 'icon.ico')
         if os.path.exists(icon_path):
@@ -23,7 +36,7 @@ class MarkdownEditor(QMainWindow):
         
         self.load_styles()
         self.initUI()
-        self.current_file = None  # Track current file
+        self.current_file = None
 
     def load_styles(self):
         # Load Qt stylesheet
@@ -97,40 +110,14 @@ class MarkdownEditor(QMainWindow):
         # Set initial size of the window
         self.resize(1200, 800)
         
-        # Set some initial markdown content
-        initial_markdown = r"""# Welcome to Markdown Editor
-
-## Math Equations Example
-
-The quadratic formula is $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$
-
-### Display Math
-Maxwell's Equations:
-
-$$
-\\begin{aligned}
-\\nabla \\cdot \\mathbf{E} &= \\frac{\\rho}{\\epsilon_0} \\\\\\
-\\nabla \\cdot \\mathbf{B} &= 0 \\\\\\
-\\nabla \\times \\mathbf{E} &= -\\frac{\\partial \\mathbf{B}}{\\partial t} \\\\\\
-\\nabla \\times \\mathbf{B} &= \\mu_0\\mathbf{J} + \\mu_0\\epsilon_0\\frac{\\partial \\mathbf{E}}{\\partial t}
-\\end{aligned}
-$$
-
-## Regular Markdown
-
-You can write:
-- Lists
-- *Italic text*
-- **Bold text**
-- [Links](https://example.com)
-
-> This is a blockquote
-
-\`\`\`python
-def hello_world():
-    print("Hello, World!")
-\`\`\`
-"""
+        # Load initial markdown content from example.md
+        example_path = os.path.join('deck', 'example.md')
+        try:
+            with open(example_path, 'r', encoding='utf-8') as file:
+                initial_markdown = file.read()
+        except FileNotFoundError:
+            initial_markdown = "# Welcome to Markedit\n\nStart typing your markdown here..."
+        
         self.editor.setText(initial_markdown)
 
         # Create a custom title bar
@@ -241,9 +228,13 @@ def hello_world():
 
     def toggleMaximized(self):
         if self.isMaximized():
+            # Remove shadow when maximized
+            self.shadow.setEnabled(False)
             self.showNormal()
             self.maximizeButton.setText("□")
         else:
+            # Disable shadow when maximized to prevent visual artifacts
+            self.shadow.setEnabled(True)
             self.showMaximized()
             self.maximizeButton.setText("❐")
 
